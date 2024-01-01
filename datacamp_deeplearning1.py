@@ -62,3 +62,20 @@ weights
 for item in input_data:
     print(item)
 # %%
+def forward_propagation(input_data_row, weights):
+    node_0_value = (input_data_row * weights['node_0']).sum()
+    node_0_output = relu(node_0_value)
+    node_1_value = (input_data_row * weights['node_1']).sum()
+    node_1_output = relu(node_1_value)
+    hidden_layer_values = np.array([node_0_output, node_1_output])
+    output = (hidden_layer_values * weights['output']).sum()
+    return(output)
+
+results = []
+
+for row in input_data:
+    results.append(forward_propagation(row, weights))
+
+results
+
+# %%
