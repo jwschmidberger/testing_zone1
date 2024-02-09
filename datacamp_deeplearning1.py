@@ -96,4 +96,9 @@ error_updated = preds_updated - target
 print(error_updated)
 
 
+'''
+Back propagation is performed after a cycle of forward propagation
+as you need the predictions.
+'''
+
 # %%
