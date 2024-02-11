@@ -103,3 +103,26 @@ def season_mean(ds, calendar="standard"):
     # Calculate the weighted average
     return (ds * weights).groupby("time.season").sum(dim="time")
 # %%
+fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(14, 4))
+ds.xc.plot(ax=ax1)
+ds.yc.plot(ax=ax2)
+# %%
+'''Next one'''
+import matplotlib.pyplot as plt
+import numpy as np
+import xarray as xr
+
+%matplotlib inline
+%config InlineBackend.figure_format='retina'
+
+#%%
+ds = xr.tutorial.load_dataset("air_temperature")
+ds
+
+#%%
+# pull out "air" dataarray with dictionary syntax
+ds["air"]
+
+
+
+# %%
