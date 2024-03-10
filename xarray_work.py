@@ -11,6 +11,19 @@ import matplotlib.pyplot as plt
 #%%
 ds = xr.tutorial.open_dataset("rasm").load()
 ds
+
+#%%
+import hvplot.pandas  # noqa
+from bokeh.sampledata.sprint import sprint as df
+
+df.head()
+#%%
+boxplot = df.hvplot.box(y='Time', by='Medal', height=400, width=400, legend=False)
+boxplot
+
+#%%
+
+
 # %%
 month_length = ds.time.dt.days_in_month
 month_length.values
@@ -125,4 +138,15 @@ ds["air"]
 
 
 
+# %%
+ds.air.lat.data
+# %%
+# plot the first timestep
+lat = ds.air.lat.data  # numpy array
+lon = ds.air.lon.data  # numpy array
+temp = ds.air.data  # numpy array
+plt.figure()
+plt.pcolormesh(lon, lat, temp[0, :, :]);
+# %%
+ds.air.mean(dim="time").plot(x="lon")
 # %%
