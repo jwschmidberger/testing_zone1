@@ -1,6 +1,5 @@
 
 #%%
-%matplotlib inline
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -124,9 +123,6 @@ ds.yc.plot(ax=ax2)
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-
-%matplotlib inline
-%config InlineBackend.figure_format='retina'
 
 #%%
 ds = xr.tutorial.load_dataset("air_temperature")
