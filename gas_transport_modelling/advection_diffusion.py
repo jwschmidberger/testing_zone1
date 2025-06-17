@@ -11,6 +11,7 @@ default the domain is initialised with ``2 ppm`` of methane everywhere, and
 additional mass is injected via the point source.  The code is intended for
 experimentation or educational use rather than production.
 
+=======
 The solver is intentionally lightweight and is meant for experimentation or
 educational purposes rather than production use.
 """
@@ -25,7 +26,6 @@ def initialize_domain(nx: int, ny: int, value: float = 0.0) -> np.ndarray:
     """Return a ``ny`` by ``nx`` array initialised to ``value``."""
 
     return np.full((ny, nx), value, dtype=float)
-
 
 def apply_boundary_conditions(c: np.ndarray, value: float = 0.0) -> None:
     """Apply constant-value Dirichlet boundaries in-place.
@@ -100,6 +100,11 @@ def step(
         v_field = np.full_like(c, float(v))
     else:
         v_field = v
+
+    # pad with edge values to approximate zero-gradient boundaries
+    padded = np.pad(c, 1, mode="edge")
+
+=======
 
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
@@ -189,6 +194,11 @@ def _example() -> None:
         emission_rate_kg_per_h=5.0,
         background_conc=2.0,
     )
+=======
+    source_y: int = 50
+
+    return c
+
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
