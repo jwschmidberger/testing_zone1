@@ -30,23 +30,6 @@ def apply_boundary_conditions(c: np.ndarray) -> None:
     c[:, -1] = 0.0
 
 
-def add_point_source(c: np.ndarray, x: int, y: int, rate: float, dt: float) -> None:
-    """Add a point source emission into the concentration field in-place."""
-
-    if 0 <= x < c.shape[1] and 0 <= y < c.shape[0]:
-        c[y, x] += rate * dt
-
-
-def step(
-    c: np.ndarray,
-    dt: float,
-    u: float | np.ndarray,
-    v: float | np.ndarray,
-    diff_coeff: float,
-) -> np.ndarray:
-    """Advance ``c`` one time step using a simple finite-difference scheme."""
-
-    dx = dy = 1.0
 
     if np.isscalar(u):
         u_field = np.full_like(c, float(u))
@@ -84,25 +67,14 @@ def run_simulation(
     diff_coeff: float = 0.1,
     source_x: int = 50,
     source_y: int = 50,
-    emission_rate: float = 1.0,
-) -> np.ndarray:
-    """Run a forward model and return the final concentration field."""
 
-    c = initialize_domain(nx, ny, value=2.0)  # 2 ppm initial concentration
-
-    nsteps = int(total_time / dt)
-    for _ in range(nsteps):
-        add_point_source(c, source_x, source_y, emission_rate, dt)
         c = step(c, dt, u, v, diff_coeff)
         apply_boundary_conditions(c)
 
     return c
 
 
-def _example():
-    """Run a simple example and plot the result."""
 
-    c = run_simulation()
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
