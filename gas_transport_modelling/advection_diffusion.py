@@ -5,12 +5,6 @@ transport of a tracer in a horizontal domain.  It assumes a regular grid
 with a uniform spacing of 1 m.  Wind components (``u`` and ``v``) may be
 passed in as scalars or 2-D arrays matching the concentration field.
 
-The solver includes a helper to add a single point emission source in
-kilograms per hour and supports a uniform background concentration.  By
-default the domain is initialised with ``2 ppm`` of methane everywhere, and
-additional mass is injected via the point source.  The code is intended for
-experimentation or educational use rather than production.
-
 The solver is intentionally lightweight and is meant for experimentation or
 educational purposes rather than production use.
 """
@@ -36,52 +30,6 @@ def apply_boundary_conditions(c: np.ndarray) -> None:
     c[:, -1] = 0.0
 
 
-def add_point_source(
-    c: np.ndarray,
-    x: int,
-    y: int,
-    rate_kg_per_h: float,
-    dt: float,
-    cell_volume_m3: float = 1.0,
-) -> None:
-    """Inject a point emission source given in kilograms per hour.
-
-    Parameters
-    ----------
-    c
-        Concentration field in ``ppm``.
-    x, y
-        Grid coordinates where the source is applied.
-    rate_kg_per_h
-        Emission rate in kilograms per hour.
-    dt
-        Time-step size in seconds.
-    cell_volume_m3
-        Assumed volume represented by a single grid cell.  The conversion
-        from kilograms to ``ppm`` uses a simple approximation of
-        ``0.714 mg`` of methane per ``ppm`` in one cubic metre at standard
-        conditions.
-    """
-
-    if not (0 <= x < c.shape[1] and 0 <= y < c.shape[0]):
-        return
-
-    kg_per_s = rate_kg_per_h / 3600.0
-    mg_per_s = kg_per_s * 1_000_000.0
-    ppm_per_s = mg_per_s / (0.714 * cell_volume_m3)
-    c[y, x] += ppm_per_s * dt
-
-
-def step(
-    c: np.ndarray,
-    dt: float,
-    u: float | np.ndarray,
-    v: float | np.ndarray,
-    diff_coeff: float,
-) -> np.ndarray:
-    """Advance ``c`` one time step using a simple finite-difference scheme."""
-
-    dx = dy = 1.0
 
     if np.isscalar(u):
         u_field = np.full_like(c, float(u))
@@ -119,63 +67,14 @@ def run_simulation(
     diff_coeff: float = 0.1,
     source_x: int = 50,
     source_y: int = 50,
-    emission_rate_kg_per_h: float = 1.0,
-    background_conc: float = 2.0,
-    cell_volume_m3: float = 1.0,
-) -> np.ndarray:
-    """Run a forward model and return the final concentration field.
 
-    Parameters
-    ----------
-    nx, ny
-        Domain dimensions in grid cells.
-    dt
-        Time-step size in seconds.
-    total_time
-        Total simulation time in seconds.
-    u, v
-        Wind components in m/s; can be scalars or 2-D arrays.
-    diff_coeff
-        Diffusion coefficient in m^2/s.
-    source_x, source_y
-        Grid indices of the point source location.
-    emission_rate_kg_per_h
-        Emission rate in kilograms per hour. This value is converted to an
-        approximate change in ``ppm`` using ``cell_volume_m3``.
-    background_conc
-        Uniform initial concentration (e.g., 2 ppm).
-    cell_volume_m3
-        Volume represented by each grid cell in cubic metres. This is used
-        for the simple conversion from ``kg/h`` to ``ppm`` when injecting
-        the point source.
-    """
-
-    c = initialize_domain(nx, ny, value=background_conc)
-
-    nsteps = int(total_time / dt)
-    for _ in range(nsteps):
-        add_point_source(
-            c,
-            source_x,
-            source_y,
-            emission_rate_kg_per_h,
-            dt,
-            cell_volume_m3=cell_volume_m3,
-        )
         c = step(c, dt, u, v, diff_coeff)
         apply_boundary_conditions(c)
 
     return c
 
 
-def _example() -> None:
-    """Run a simple example using a 2 ppm background and a 5 kg/h source."""
 
-    c = run_simulation(
-        total_time=20.0,
-        emission_rate_kg_per_h=5.0,
-        background_conc=2.0,
-    )
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
