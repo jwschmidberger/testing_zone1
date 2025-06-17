@@ -20,27 +20,6 @@ def initialize_domain(nx: int, ny: int, value: float = 0.0) -> np.ndarray:
 
     return np.full((ny, nx), value, dtype=float)
 
-
-def apply_boundary_conditions(c: np.ndarray) -> None:
-    """Apply simple zero-value Dirichlet boundaries in-place."""
-
-    c[0, :] = 0.0
-    c[-1, :] = 0.0
-    c[:, 0] = 0.0
-    c[:, -1] = 0.0
-
-
-
-    if np.isscalar(u):
-        u_field = np.full_like(c, float(u))
-    else:
-        u_field = u
-
-    if np.isscalar(v):
-        v_field = np.full_like(c, float(v))
-    else:
-        v_field = v
-
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
 
@@ -66,14 +45,9 @@ def run_simulation(
     v: float | np.ndarray = 0.5,
     diff_coeff: float = 0.1,
     source_x: int = 50,
-    source_y: int = 50,
-
-        c = step(c, dt, u, v, diff_coeff)
-        apply_boundary_conditions(c)
+    source_y: int = 50
 
     return c
-
-
 
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
