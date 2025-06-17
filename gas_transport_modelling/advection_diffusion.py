@@ -21,13 +21,21 @@ def initialize_domain(nx: int, ny: int, value: float = 0.0) -> np.ndarray:
     return np.full((ny, nx), value, dtype=float)
 
 
-def apply_boundary_conditions(c: np.ndarray) -> None:
-    """Apply simple zero-value Dirichlet boundaries in-place."""
+def apply_boundary_conditions(c: np.ndarray, value: float = 0.0) -> None:
+    """Apply constant-value Dirichlet boundaries in-place.
 
-    c[0, :] = 0.0
-    c[-1, :] = 0.0
-    c[:, 0] = 0.0
-    c[:, -1] = 0.0
+    Parameters
+    ----------
+    c
+        Concentration field to update in-place.
+    value
+        Boundary concentration to impose on all edges.
+    """
+
+    c[0, :] = value
+    c[-1, :] = value
+    c[:, 0] = value
+    c[:, -1] = value
 
 
 
@@ -85,3 +93,9 @@ def run_simulation(
 
 if __name__ == "__main__":
     _example()
+
+    Notes
+    -----
+    The solver enforces Dirichlet boundary conditions with the same value
+    as ``background_conc`` at every time step.
+        apply_boundary_conditions(c, value=background_conc)
