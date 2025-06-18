@@ -104,8 +104,6 @@ def step(
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
 
-=======
-
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
 
@@ -194,7 +192,6 @@ def _example() -> None:
         emission_rate_kg_per_h=5.0,
         background_conc=2.0,
     )
-=======
     source_y: int = 50
 
     return c
