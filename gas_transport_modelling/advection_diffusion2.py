@@ -10,6 +10,7 @@ Model: pyELQ, RJMCMC, Gaussian plume
 
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 
 #%%
@@ -185,6 +186,40 @@ def _example() -> None:
     plt.xlabel("x (m)")
     plt.ylabel("y (m)")
     plt.show()
+
+
+def interactive_wind_example() -> None:
+    """Demonstrate a Plotly slider for changing wind direction."""
+
+    angles = np.linspace(0.0, 360.0, 13)
+    frames: list[go.Frame] = []
+    for angle in angles:
+        u = np.cos(np.deg2rad(angle))
+        v = np.sin(np.deg2rad(angle))
+        c = run_simulation(u=u, v=v)
+        frames.append(
+            go.Frame(
+                data=[go.Heatmap(z=c, colorscale="Viridis")],
+                name=f"{angle:.0f}",
+            )
+        )
+
+    fig = go.Figure(data=frames[0].data, frames=frames)
+    steps = [
+        dict(
+            method="animate",
+            args=[[f.name], {"mode": "immediate"}],
+            label=f.name,
+        )
+        for f in frames
+    ]
+    fig.update_layout(
+        title="Wind direction demo",
+        xaxis_title="x (m)",
+        yaxis_title="y (m)",
+        sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Angle: "}}],
+    )
+    fig.show()
 
 
 if __name__ == "__main__":
