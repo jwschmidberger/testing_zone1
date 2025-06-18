@@ -45,6 +45,18 @@ def step(
 ) -> np.ndarray:
     """Advance ``c`` one time step using a simple finite-difference scheme."""
     dx = dy = 1.0
+
+    if np.isscalar(u):
+        u_field = np.full_like(c, float(u))
+    else:
+        u_field = u
+
+    if np.isscalar(v):
+        v_field = np.full_like(c, float(v))
+    else:
+        v_field = v
+
+    # pad with edge values to approximate zero-gradient boundaries
     u_field = np.full_like(c, float(u)) if np.isscalar(u) else u
     v_field = np.full_like(c, float(v)) if np.isscalar(v) else v
     padded = np.pad(c, 1, mode="edge")
@@ -116,6 +128,27 @@ def interactive_wind_example() -> None:
                 name=f"{angle:.0f}",
             )
         )
+
+    fig = go.Figure(data=frames[0].data, frames=frames)
+    steps = [
+        dict(
+            method="animate",
+            args=[[f.name], {"mode": "immediate"}],
+            label=f.name,
+        )
+        for f in frames
+    ]
+    fig.update_layout(
+        title="Wind direction demo",
+        xaxis_title="x (m)",
+        yaxis_title="y (m)",
+        sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Angle: "}}],
+    )
+    fig.show()
+
+
+if __name__ == "__main__":
+    _example()
 
     fig = go.Figure(data=frames[0].data, frames=frames)
     steps = [
