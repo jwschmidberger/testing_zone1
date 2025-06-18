@@ -94,9 +94,6 @@ def step(
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
 
-    # pad with edge values to approximate zero-gradient boundaries
-    padded = np.pad(c, 1, mode="edge")
-
     laplacian = (
         padded[2:, 1:-1] - 2 * padded[1:-1, 1:-1] + padded[:-2, 1:-1]
     ) / dy**2 + (
@@ -182,10 +179,6 @@ def _example() -> None:
         emission_rate_kg_per_h=5.0,
         background_conc=2.0,
     )
-    source_y: int = 50
-
-    return c
-
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
