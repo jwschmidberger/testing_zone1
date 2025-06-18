@@ -7,6 +7,7 @@ Model: pyELQ, RJMCMC, Gaussian plume
 
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def initialize_domain(nx: int, ny: int, value: float = 0.0) -> np.ndarray:
     """Return a ``ny`` by ``nx`` array initialised to ``value``."""
@@ -47,6 +48,7 @@ def step(
     u_field = np.full_like(c, float(u)) if np.isscalar(u) else u
     v_field = np.full_like(c, float(v)) if np.isscalar(v) else v
     padded = np.pad(c, 1, mode="edge")
+
     laplacian = (
         (padded[2:, 1:-1] - 2 * padded[1:-1, 1:-1] + padded[:-2, 1:-1]) / dy**2 +
         (padded[1:-1, 2:] - 2 * padded[1:-1, 1:-1] + padded[1:-1, :-2]) / dx**2
@@ -82,13 +84,56 @@ def run_simulation(
 
 def _example() -> None:
     """Run a simple example using a 2 ppm background and a 5 kg/h source."""
+
+    c = run_simulation(
+        total_time=20.0,
+        emission_rate_kg_per_h=5.0,
+        background_conc=2.0,
+    )
+
     c = run_simulation(total_time=20.0, emission_rate_kg_per_h=5.0, background_conc=2.0)
+
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
     plt.xlabel("x (m)")
     plt.ylabel("y (m)")
     plt.show()
+
+
+def interactive_wind_example() -> None:
+    """Demonstrate a Plotly slider for changing wind direction."""
+
+    angles = np.linspace(0.0, 360.0, 13)
+    frames: list[go.Frame] = []
+    for angle in angles:
+        u = np.cos(np.deg2rad(angle))
+        v = np.sin(np.deg2rad(angle))
+        c = run_simulation(u=u, v=v)
+        frames.append(
+            go.Frame(
+                data=[go.Heatmap(z=c, colorscale="Viridis")],
+                name=f"{angle:.0f}",
+            )
+        )
+
+    fig = go.Figure(data=frames[0].data, frames=frames)
+    steps = [
+        dict(
+            method="animate",
+            args=[[f.name], {"mode": "immediate"}],
+            label=f.name,
+        )
+        for f in frames
+    ]
+    fig.update_layout(
+        title="Wind direction demo",
+        xaxis_title="x (m)",
+        yaxis_title="y (m)",
+        sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Angle: "}}],
+    )
+    fig.show()
+
 
 if __name__ == "__main__":
     _example()
