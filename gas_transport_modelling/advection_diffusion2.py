@@ -10,6 +10,7 @@ Model: pyELQ, RJMCMC, Gaussian plume
 
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 
 #%%
@@ -90,9 +91,6 @@ def step(
         v_field = np.full_like(c, float(v))
     else:
         v_field = v
-
-    # pad with edge values to approximate zero-gradient boundaries
-    padded = np.pad(c, 1, mode="edge")
 
     # pad with edge values to approximate zero-gradient boundaries
     padded = np.pad(c, 1, mode="edge")
@@ -182,16 +180,46 @@ def _example() -> None:
         emission_rate_kg_per_h=5.0,
         background_conc=2.0,
     )
-    source_y: int = 50
-
-    return c
-
     plt.imshow(c, origin="lower", cmap="viridis")
     plt.colorbar(label="Concentration (ppm)")
     plt.title("Final concentration field")
     plt.xlabel("x (m)")
     plt.ylabel("y (m)")
     plt.show()
+
+
+def interactive_wind_example() -> None:
+    """Demonstrate a Plotly slider for changing wind direction."""
+
+    angles = np.linspace(0.0, 360.0, 13)
+    frames: list[go.Frame] = []
+    for angle in angles:
+        u = np.cos(np.deg2rad(angle))
+        v = np.sin(np.deg2rad(angle))
+        c = run_simulation(u=u, v=v)
+        frames.append(
+            go.Frame(
+                data=[go.Heatmap(z=c, colorscale="Viridis")],
+                name=f"{angle:.0f}",
+            )
+        )
+
+    fig = go.Figure(data=frames[0].data, frames=frames)
+    steps = [
+        dict(
+            method="animate",
+            args=[[f.name], {"mode": "immediate"}],
+            label=f.name,
+        )
+        for f in frames
+    ]
+    fig.update_layout(
+        title="Wind direction demo",
+        xaxis_title="x (m)",
+        yaxis_title="y (m)",
+        sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Angle: "}}],
+    )
+    fig.show()
 
 
 if __name__ == "__main__":
