@@ -93,6 +93,33 @@ def run_simulation(
         apply_boundary_conditions(c, value=background_conc)
     return c
 
+def advance_field(
+    c: np.ndarray,
+    nsteps: int,
+    dt: float,
+    u: float | np.ndarray,
+    v: float | np.ndarray,
+    diff_coeff: float,
+    source_x: int,
+    source_y: int,
+    emission_rate_kg_per_h: float,
+    background_conc: float,
+    cell_volume_m3: float = 1.0,
+) -> np.ndarray:
+    """Advance ``c`` ``nsteps`` times while injecting a point source."""
+    for _ in range(nsteps):
+        add_point_source(
+            c,
+            source_x,
+            source_y,
+            emission_rate_kg_per_h,
+            dt,
+            cell_volume_m3=cell_volume_m3,
+        )
+        c = step(c, dt, u, v, diff_coeff)
+        apply_boundary_conditions(c, value=background_conc)
+    return c
+
 def example() -> None:
     """Run a simple example using a 2 ppm background and a 5 kg/h source."""
     c = run_simulation(
@@ -136,6 +163,54 @@ def interactive_wind_example() -> None:
         xaxis_title="x (m)",
         yaxis_title="y (m)",
         sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Angle: "}}],
+    )
+    fig.show()
+
+def interactive_wind_momentum_example() -> None:
+    """Interactive example where wind changes have a delayed effect."""
+    angles = np.linspace(0.0, 360.0, 13)
+    frames: list[go.Frame] = []
+    c = initialize_domain(100, 100, value=2.0)
+    u_prev = np.cos(np.deg2rad(angles[0]))
+    v_prev = np.sin(np.deg2rad(angles[0]))
+    for angle in angles[1:]:
+        u_target = np.cos(np.deg2rad(angle))
+        v_target = np.sin(np.deg2rad(angle))
+        # Gradually transition from the previous wind to the new one
+        for frac in np.linspace(0.0, 1.0, 10):
+            u = (1.0 - frac) * u_prev + frac * u_target
+            v = (1.0 - frac) * v_prev + frac * v_target
+            c = advance_field(
+                c,
+                1,
+                dt=0.1,
+                u=u,
+                v=v,
+                diff_coeff=0.1,
+                source_x=50,
+                source_y=50,
+                emission_rate_kg_per_h=1.0,
+                background_conc=2.0,
+            )
+            frames.append(
+                go.Frame(
+                    data=[go.Heatmap(z=c.copy(), colorscale="Viridis")],
+                    name=f"{angle:.0f}_{frac:.1f}",
+                )
+            )
+        u_prev = u_target
+        v_prev = v_target
+
+    fig = go.Figure(data=frames[0].data, frames=frames)
+    steps = [
+        dict(method="animate", args=[[f.name], {"mode": "immediate"}], label=f.name)
+        for f in frames
+    ]
+    fig.update_layout(
+        title="Wind direction with momentum",
+        xaxis_title="x (m)",
+        yaxis_title="y (m)",
+        sliders=[{"steps": steps, "active": 0, "currentvalue": {"prefix": "Frame: "}}],
     )
     fig.show()
 
