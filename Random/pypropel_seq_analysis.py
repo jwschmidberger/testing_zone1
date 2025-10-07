@@ -21,7 +21,7 @@ df_old = pp.io.read(
 df_old
 
 # %%
-df_short = df_old.head(100)
+df_short = df_old.head(200)
 df_short
 # %%
 df = pd.DataFrame()
@@ -33,5 +33,9 @@ prot_series = pd.Series(df['prot'].unique())
 print(prot_series)
 
 # %%
-prot_series
+tmk.seq.retrieve_pdb_from_pdbtm(
+    prot_series=prot_series,
+    kind='tr',
+    sv_fp=f'{datapath}/cplx/',
+)
 # %%
