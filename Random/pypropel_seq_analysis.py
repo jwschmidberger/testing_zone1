@@ -39,3 +39,32 @@ tmk.seq.retrieve_pdb_from_pdbtm(
     sv_fp=f'{datapath}/cplx/',
 )
 # %%
+import requests
+
+def fetch_pdb_fasta(pdb_code: str, chain: str | None = None) -> str:
+    """
+    Fetch the FASTA sequence for a PDB entry (optionally a specific chain).
+
+    Examples
+    --------
+    fetch_pdb_fasta("1A0I")              -> whole entry
+    fetch_pdb_fasta("1A0I", chain="A")   -> chain A only
+    """
+    pdb_code = pdb_code.upper()
+    if chain:
+        chain = chain.upper()
+        url = f"https://www.rcsb.org/fasta/entry/{pdb_code}/download"
+        params = {"structureId": f"{pdb_code}.{chain}"}
+    else:
+        url = f"https://www.rcsb.org/fasta/entry/{pdb_code}/download"
+        params = None
+
+    resp = requests.get(url, params=params, timeout=30)
+    resp.raise_for_status()
+    return resp.text.strip()
+# %%
+fasta_str = fetch_pdb_fasta('2NO4', chain='A')
+fasta_str
+
+
+# %%
