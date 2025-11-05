@@ -143,6 +143,8 @@ def fetch_pdb_fasta(pdb_code: str, chain: str | None = None) -> str:
     return resp.text.strip()
 # %%
 fasta = fetch_pdb_fasta("3BJX", chain="A")
+fasta
+#%%
 hits_df = run_psiblast(fasta, top_n=10)
 print(hits_df)
 
